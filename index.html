@@ -1,64 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>N8N Chats</title>
 
-    <!-- iOS: abrir a pantalla completa al iniciar desde Pantalla de inicio -->
+    <!-- PWA Meta Tags para iPhone -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- Opciones: default | black | black-translucent -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MiApp" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="N8N Chats" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- Icono para iOS (data URL para mantener 1 solo archivo). Reemplaza por tu icono si quieres. -->
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23111'/%3E%3Ctext x='50%25' y='55%25' font-family='system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial' font-size='72' text-anchor='middle' fill='white'%3E⚡%3C/text%3E%3C/svg%3E" />
+    <!-- Manifest para PWA -->
+    <link rel="manifest" href="manifest.json" />
 
-    <title>MiApp a pantalla completa</title>
-    <style>
-      /* Usa el área completa respetando el notch y la barra de estado */
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        -webkit-font-smoothing: antialiased;
-        font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        background: linear-gradient(180deg, #0f172a, #1e293b);
-        color: #fff;
+    <!-- Iconos para iPhone -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png" />
 
-        /* Evita saltos por safe areas y respeta el notch */
-        padding-top: env(safe-area-inset-top);
-        padding-right: env(safe-area-inset-right);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-
-        display: grid;
-        place-items: center;
-      }
-
-      /* Evita el “rubber band” vertical (parcialmente en iOS) */
-      body { overscroll-behavior: none; }
-    </style>    
+    <!-- Vue.js desde CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   </head>
   <body>
-    <main class="chat">
-      <iframe src="https://n8n.ridaflows.com/webhook/5dc6089b-a9b3-4330-868f-94285481d178/chat"/>
-    </main>
+    <div id="app">
+      <h1>{{ message }}</h1>
+    </div>
 
     <script>
-      // Detectar si estamos en modo standalone (iOS) o display-mode standalone (otros)
-      const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-      if (isStandalone) {
-        document.body.classList.add('standalone');
-        const el = document.getElementById('mode');
-        if (el) el.textContent = 'Modo standalone (Pantalla completa)';
-      }
+      const { createApp } = Vue;
 
-      // iOS: bloquear gesto de zoom accidental con doble tap (opcional)
-      let lastTouchEnd = 0;
-      document.addEventListener('touchend', function (event) {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) event.preventDefault();
-        lastTouchEnd = now;
-      }, { passive: false });
+      createApp({
+        data() {
+          return {
+            message: "Hello World! 🌍",
+          };
+        },
+      }).mount("#app");
     </script>
   </body>
 </html>
