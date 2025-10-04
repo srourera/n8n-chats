@@ -261,6 +261,24 @@
         mounted() {
           this.checkUser();
           this.configureMarked();
+
+          // Listener para cuando la PWA vuelve a estar visible
+          document.addEventListener("visibilitychange", () => {
+            if (!document.hidden && this.user) {
+              this.syncMessages();
+            }
+          });
+
+          // Listener para cuando la ventana gana foco
+          window.addEventListener("focus", () => {
+            if (this.user) {
+              this.syncMessages();
+            }
+          });
+        },
+        activated() {
+          // Para PWAs - se ejecuta cuando la app se activa
+          this.checkUser();
         },
         updated() {
           this.scrollToBottom();
