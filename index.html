@@ -55,6 +55,14 @@
       /* Evita el “rubber band” vertical (parcialmente en iOS) */
       body { overscroll-behavior: none; }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+    	import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+    
+    	createChat({
+    		webhookUrl: 'https://n8n.ridaflows.com/webhook/5dc6089b-a9b3-4330-868f-94285481d178/chat'
+    	});
+    </script>
   </head>
   <body>
     <main class="card">
