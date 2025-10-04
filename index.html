@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🤖 Arens</title>
+    <title>Arens</title>
 
     <!-- PWA Meta Tags para iPhone -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,16 +11,27 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="apple-mobile-web-app-title" content="🤖 Arens" />
+    <meta name="apple-mobile-web-app-title" content="Arens" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- Manifest para PWA -->
-    <link rel="manifest" href="manifest.json" />
-
     <!-- Iconos para iPhone -->
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://cms.housfy.com/assets/fe0f6198-fd34-4fd5-98c1-575fc312aa9b?width=180"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="https://cms.housfy.com/assets/fe0f6198-fd34-4fd5-98c1-575fc312aa9b?width=32"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://cms.housfy.com/assets/fe0f6198-fd34-4fd5-98c1-575fc312aa9b?width=16"
+    />
 
     <!-- Vue.js desde CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -32,7 +43,12 @@
       <!-- Pantalla de bienvenida si no hay usuario -->
       <div v-if="!user" class="welcome-screen">
         <div class="welcome-content">
-          <h1>🤖 Arens</h1>
+          <img
+            src="https://cms.housfy.com/assets/fe0f6198-fd34-4fd5-98c1-575fc312aa9b?width=100"
+            alt="Arens"
+            style="margin-bottom: 10px"
+          />
+          <h1>Arens</h1>
           <p>Crea un usuario o inicia sesión</p>
           <button @click="showAuthModal = true" class="start-button">
             Empezemos
@@ -44,7 +60,13 @@
       <div v-else class="chat-container">
         <!-- Header con botón de logout -->
         <div class="chat-header">
-          <h2>🤖 Arens</h2>
+          <h2 style="display: flex; align-items: center; gap: 10px">
+            <img
+              src="https://cms.housfy.com/assets/fe0f6198-fd34-4fd5-98c1-575fc312aa9b?width=32"
+              alt="Arens"
+            />
+            Arens
+          </h2>
           <button @click="logout" class="logout-button" title="Cerrar sesión">
             <svg
               width="20"
@@ -70,7 +92,7 @@
           >
             <div class="message-content">
               <h3>¡Hola {{ user.name }}! 👋</h3>
-              <p>Bienvenido a 🤖 Arens. ¿En qué puedo ayudarte hoy?</p>
+              <p>Bienvenido a Arens. ¿En qué puedo ayudarte hoy?</p>
             </div>
           </div>
 
