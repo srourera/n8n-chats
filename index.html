@@ -34,46 +34,13 @@
         place-items: center;
       }
 
-      .card {
-        width: min(92vw, 720px);
-        border-radius: 20px;
-        padding: 24px;
-        background: rgba(255,255,255,0.08);
-        backdrop-filter: blur(8px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      }
-
-      h1 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 36px); }
-      p { margin: 0 0 16px; line-height: 1.45; }
-
-      .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,0.35); font-size: 12px; }
-
-      .hint { opacity: 0.9; font-size: 14px; }
-
-      .standalone .badge { background: rgba(34,197,94,0.4); }
-
       /* Evita el “rubber band” vertical (parcialmente en iOS) */
       body { overscroll-behavior: none; }
-    </style>
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-    <script type="module">
-    	import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-    
-    	createChat({
-    		webhookUrl: 'https://n8n.ridaflows.com/webhook/5dc6089b-a9b3-4330-868f-94285481d178/chat'
-    	});
-    </script>
+    </style>    
   </head>
   <body>
-    <main class="card">
-      <div class="badge" id="mode">Modo navegador</div>
-      <h1>iOS a pantalla completa</h1>
-      <p class="hint">Añade esta página a tu pantalla de inicio para que se abra sin la barra de navegación de Safari.</p>
-      <ol class="hint">
-        <li>En Safari, toca <strong>Compartir</strong> (icono cuadrado con flecha).</li>
-        <li>Toca <strong>Añadir a pantalla de inicio</strong>.</li>
-        <li>Ábrela desde el icono creado: se ejecutará en <em>standalone</em>.</li>
-      </ol>
+    <main class="chat">
+      <iframe src="https://n8n.ridaflows.com/webhook/5dc6089b-a9b3-4330-868f-94285481d178/chat"/>
     </main>
 
     <script>
