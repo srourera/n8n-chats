@@ -1,3 +1,15 @@
+<!-- TODOS
+- Registrar memorias de cosas random y añadirlas como tools
+- Registrar lista de la compra y añadirlas como tools
+- Registrar cosas a hacer y añadirlas como tools
+- Registrar normas establecidas por el usuario y añadirlas como tools
+- Eventos del calendario
+- Gestión de los menús en casa
+- Reservar en restaurantes
+- Enviar notificaciones push con Pushcut
+- Integrarlo con voz con Shortcuts
+-->
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -287,7 +299,7 @@
               });
             }
           },
-          createUser() {
+          async createUser() {
             if (this.formData.name && this.formData.username) {
               localStorage.setItem("name", this.formData.name);
               localStorage.setItem("userName", this.formData.username);
@@ -302,6 +314,9 @@
 
               this.showAuthModal = false;
               this.formData = { name: "", username: "" };
+
+              // Sincronizar mensajes con el servidor después del login
+              await this.syncMessages();
 
               // Focus al input y scroll al final después de crear usuario
               this.$nextTick(() => {
