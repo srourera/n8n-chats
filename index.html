@@ -495,20 +495,23 @@
               );
 
               if (response.ok) {
-                const serverMessages = await response
-                  .json()
-                  .filter((i) => !!i.username);
+                const serverMessages = await response.json();
                 console.log("Mensajes del servidor:", serverMessages);
 
-                // Actualizar mensajes si la respuesta es válida
+                // Verificar si la respuesta es un array válido
                 if (Array.isArray(serverMessages)) {
-                  this.conversationEvents = serverMessages;
-                  this.user.conversationEvents = serverMessages;
+                  // Filtrar mensajes que tengan username
+                  const filteredMessages = serverMessages.filter(
+                    (i) => !!i.username
+                  );
+
+                  this.conversationEvents = filteredMessages;
+                  this.user.conversationEvents = filteredMessages;
 
                   // Actualizar localStorage
                   localStorage.setItem(
                     "conversationevents",
-                    JSON.stringify(serverMessages)
+                    JSON.stringify(filteredMessages)
                   );
 
                   console.log("Mensajes sincronizados correctamente");
