@@ -52,8 +52,33 @@
   </head>
   <body>
     <div id="app">
+      <!-- Pantalla de autenticación con token -->
+      <div v-if="!token" class="auth-screen">
+        <div class="auth-content">
+          <img
+            src="https://res.cloudinary.com/srourera/image/upload/t_100x100/v1759595913/ChatGPT_Image_4_oct_2025_18_38_15_gyw5ul.png"
+            alt="Arens"
+            style="margin-bottom: 20px; border-radius: 100%"
+          />
+          <h1>🔐 Aplicación Privada</h1>
+          <p>
+            Esta aplicación es privada. Introduce la contraseña para continuar.
+          </p>
+          <div class="password-form">
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Contraseña"
+              @keydown.enter.prevent="authenticate"
+              class="password-input"
+            />
+            <button @click="authenticate" class="auth-button">Acceder</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Pantalla de bienvenida si no hay usuario -->
-      <div v-if="!user" class="welcome-screen">
+      <div v-else-if="!user" class="welcome-screen">
         <div class="welcome-content">
           <img
             src="https://res.cloudinary.com/srourera/image/upload/t_100x100/v1759595913/ChatGPT_Image_4_oct_2025_18_38_15_gyw5ul.png"
@@ -142,6 +167,18 @@
               </div>
             </div>
           </div>
+
+          <!-- Indicador de carga -->
+          <div v-if="isLoading" class="loading-message">
+            <div class="loading-content">
+              <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span class="loading-text">Arens está pensando...</span>
+            </div>
+          </div>
         </div>
 
         <!-- Input de mensaje -->
@@ -201,7 +238,7 @@
             ></textarea>
             <button
               @click="sendMessage"
-              :disabled="!newMessage.trim() && !selectedFile"
+              :disabled="(!newMessage.trim() && !selectedFile) || isLoading"
               class="send-button"
             >
               <svg
@@ -262,10 +299,13 @@
       createApp({
         data() {
           return {
+            token: null,
             user: null,
             showAuthModal: false,
             newMessage: "",
             selectedFile: null,
+            isLoading: false,
+            password: "",
             formData: {
               name: "",
               username: "",
@@ -292,6 +332,16 @@
         },
         methods: {
           async checkUser() {
+            // Primero verificar si hay token
+            const arensHeaderToken = localStorage.getItem("arensHeaderToken");
+            if (!arensHeaderToken) {
+              this.token = null;
+              return;
+            }
+
+            this.token = arensHeaderToken;
+
+            // Si hay token, verificar usuario
             const userName = localStorage.getItem("userName");
             if (userName) {
               this.user = {
@@ -313,6 +363,15 @@
                   this.focusInput();
                 }, 100);
               });
+            }
+          },
+          authenticate() {
+            if (this.password.trim()) {
+              // Guardar el token en localStorage
+              localStorage.setItem("arensHeaderToken", this.password.trim());
+              this.password = "";
+              // Volver a llamar a checkUser para avanzar
+              this.checkUser();
             }
           },
           async createUser() {
@@ -371,6 +430,9 @@
               this.scrollToBottom();
               this.saveConversation();
 
+              // Activar loading
+              this.isLoading = true;
+
               try {
                 console.log("Enviando mensaje:", message);
 
@@ -390,6 +452,9 @@
                   "https://n8n.ridaflows.com/webhook/personal-assistant",
                   {
                     method: "POST",
+                    headers: {
+                      "x-authorization-arens": this.token,
+                    },
                     body: formData,
                   }
                 );
@@ -442,6 +507,9 @@
 
                 this.conversationEvents.push(errorMessage);
                 this.saveConversation();
+              } finally {
+                // Desactivar loading
+                this.isLoading = false;
               }
             }
           },
@@ -515,6 +583,7 @@
 
               this.selectedFile = file;
             }
+            this.focusInput();
           },
           clearFile() {
             this.selectedFile = null;
@@ -532,6 +601,7 @@
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
+                    "x-authorization-arens": this.token,
                   },
                 }
               );
@@ -565,6 +635,14 @@
                   "Error al sincronizar mensajes:",
                   response.status
                 );
+
+                // Si es error 403, borrar token y volver a pantalla inicial
+                if (response.status === 403) {
+                  localStorage.removeItem("arensHeaderToken");
+                  this.token = null;
+                  this.user = null;
+                  this.conversationEvents = [];
+                }
               }
             } catch (error) {
               console.error(
@@ -592,12 +670,100 @@
         overflow: hidden;
       }
 
+      .auth-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
+      }
+
+      .auth-content {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+        margin: 2rem;
+      }
+
+      .auth-content h1 {
+        color: #333;
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+      }
+
+      .auth-content p {
+        color: #666;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+      }
+
+      .password-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .password-input {
+        padding: 1rem;
+        border: 2px solid #e5e5e5;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .password-input:focus {
+        border-color: #d2691e;
+        box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
+      }
+
+      .auth-button {
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+      }
+
+      .auth-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+      }
+
+      .auth-button:active {
+        transform: translateY(0);
+      }
+
       .welcome-screen {
         display: flex;
         align-items: center;
         justify-content: center;
         height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
       }
 
       .welcome-content {
@@ -621,7 +787,7 @@
 
       .start-button {
         background: white;
-        color: #667eea;
+        color: #cd853f;
         border: none;
         padding: 1rem 2rem;
         font-size: 1.1rem;
@@ -715,11 +881,16 @@
       }
 
       .message-user .message-content {
-        background: #667eea;
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
         color: white;
         padding: 0.75rem 1rem;
         border-radius: 18px 18px 4px 18px;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
         animation: slideInRight 0.3s ease-out;
         position: relative;
       }
@@ -739,12 +910,17 @@
         right: -8px;
         width: 24px;
         height: 24px;
-        background: #667eea;
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 2px 8px rgba(139, 69, 19, 0.4);
         border: 2px solid white;
         z-index: 10;
         animation: badgePulse 0.3s ease-out;
@@ -769,6 +945,68 @@
           transform: scale(1.1);
         }
         100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .loading-message {
+        display: flex;
+        justify-content: flex-start;
+        margin: 1rem 0;
+        animation: slideInLeft 0.3s ease-out;
+      }
+
+      .loading-content {
+        background: transparent;
+        color: #333;
+        padding: 0.75rem 1rem;
+        border-radius: 18px 18px 18px 4px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: 80%;
+      }
+
+      .loading-dots {
+        display: flex;
+        gap: 4px;
+      }
+
+      .loading-dots span {
+        width: 8px;
+        height: 8px;
+        background: #d2691e;
+        border-radius: 50%;
+        animation: loadingBounce 1.4s ease-in-out infinite both;
+      }
+
+      .loading-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+
+      .loading-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      .loading-dots span:nth-child(3) {
+        animation-delay: 0s;
+      }
+
+      .loading-text {
+        font-size: 0.9rem;
+        color: #666;
+        font-style: italic;
+      }
+
+      @keyframes loadingBounce {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+          opacity: 0.5;
+        }
+        40% {
           transform: scale(1);
           opacity: 1;
         }
@@ -841,7 +1079,7 @@
       }
 
       .message-ai .message-text blockquote {
-        border-left: 4px solid #667eea;
+        border-left: 4px solid #d2691e;
         margin: 0.5rem 0;
         padding-left: 1rem;
         color: #666;
@@ -849,7 +1087,7 @@
       }
 
       .message-ai .message-text a {
-        color: #667eea;
+        color: #d2691e;
         text-decoration: none;
       }
 
@@ -934,8 +1172,8 @@
       }
 
       .input-wrapper:focus-within {
-        border-color: #667eea;
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+        border-color: #d2691e;
+        box-shadow: 0 4px 20px rgba(210, 105, 30, 0.15);
         transform: translateY(-1px);
       }
 
@@ -959,7 +1197,12 @@
       }
 
       .send-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
         border: none;
         width: 40px;
         height: 40px;
@@ -971,7 +1214,7 @@
         color: white;
         transition: all 0.3s ease;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
         position: relative;
         overflow: hidden;
       }
@@ -994,7 +1237,7 @@
 
       .send-button:hover:not(:disabled) {
         transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
       }
 
       .send-button:hover:not(:disabled)::before {
@@ -1048,19 +1291,29 @@
       .image-button:hover {
         background: #e9ecef;
         color: #333;
-        border-color: #667eea;
+        border-color: #d2691e;
         transform: scale(1.05);
       }
 
       .image-button.has-file {
-        background: #667eea;
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
         color: white;
-        border-color: #667eea;
+        border-color: #cd853f;
       }
 
       .image-button.has-file:hover {
-        background: #5a6fd8;
-        border-color: #5a6fd8;
+        background: linear-gradient(
+          135deg,
+          #d2691e 0%,
+          #ff8c00 50%,
+          #f4a460 100%
+        );
+        border-color: #cd853f;
       }
 
       .remove-file-overlay {
@@ -1138,7 +1391,7 @@
 
       .form-group input:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: #d2691e;
       }
 
       .form-actions {
@@ -1169,12 +1422,22 @@
       }
 
       .confirm-button {
-        background: #667eea;
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
         color: white;
       }
 
       .confirm-button:hover {
-        background: #5a6fd8;
+        background: linear-gradient(
+          135deg,
+          #d2691e 0%,
+          #ff8c00 50%,
+          #f4a460 100%
+        );
       }
     </style>
   </body>
