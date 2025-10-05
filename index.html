@@ -125,6 +125,21 @@
                 v-html="event.role === 'IA' ? parseMarkdown(event.message) : event.message"
               ></div>
               <div class="message-time">{{ formatTime(event.createdAt) }}</div>
+              <div class="file-badge" v-if="event.withFile">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="file-icon"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21,15 16,10 5,21"></polyline>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -261,27 +276,10 @@
         mounted() {
           this.checkUser();
           this.configureMarked();
-
-          // Listener para cuando la PWA vuelve a estar visible
-          document.addEventListener("visibilitychange", () => {
-            if (!document.hidden && this.user) {
-              this.syncMessages();
-            }
-          });
-
-          // Listener para cuando la ventana gana foco
-          window.addEventListener("focus", () => {
-            if (this.user) {
-              this.syncMessages();
-            }
-          });
         },
         activated() {
           // Para PWAs - se ejecuta cuando la app se activa
           this.checkUser();
-        },
-        updated() {
-          this.scrollToBottom();
         },
         watch: {
           user(newUser) {
@@ -366,9 +364,11 @@
                 role: "Human",
                 message:
                   message || (this.selectedFile ? "[Archivo enviado]" : ""),
+                withFile: !!this.selectedFile,
               };
 
               this.conversationEvents.push(userMessage);
+              this.scrollToBottom();
               this.saveConversation();
 
               try {
@@ -382,6 +382,9 @@
                 if (this.selectedFile) {
                   formData.append("file", this.selectedFile);
                 }
+
+                this.selectedFile = null;
+                this.$refs.fileInput.value = "";
 
                 const response = await fetch(
                   "https://n8n.ridaflows.com/webhook/personal-assistant",
@@ -402,9 +405,11 @@
                     role: "IA",
                     message:
                       data.message || data.response || "Respuesta recibida",
+                    withFile: false,
                   };
 
                   this.conversationEvents.push(aiMessage);
+                  this.scrollToBottom();
                   this.saveConversation();
                 } else {
                   console.error("Error en la respuesta:", response.status);
@@ -416,9 +421,11 @@
                     role: "IA",
                     message:
                       "Error al procesar la solicitud. Inténtalo de nuevo.",
+                    withFile: false,
                   };
 
                   this.conversationEvents.push(errorMessage);
+                  this.scrollToBottom();
                   this.saveConversation();
                 }
               } catch (error) {
@@ -430,14 +437,11 @@
                   username: this.user.username,
                   role: "IA",
                   message: "Error de conexión. Inténtalo de nuevo.",
+                  withFile: false,
                 };
 
                 this.conversationEvents.push(errorMessage);
                 this.saveConversation();
-              } finally {
-                // Limpiar archivo seleccionado
-                this.selectedFile = null;
-                this.$refs.fileInput.value = "";
               }
             }
           },
@@ -717,6 +721,7 @@
         border-radius: 18px 18px 4px 18px;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         animation: slideInRight 0.3s ease-out;
+        position: relative;
       }
 
       .message-ai .message-content {
@@ -725,6 +730,48 @@
         padding: 0.75rem 1rem;
         border-radius: 18px 18px 18px 4px;
         animation: slideInLeft 0.3s ease-out;
+        position: relative;
+      }
+
+      .file-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        border: 2px solid white;
+        z-index: 10;
+        animation: badgePulse 0.3s ease-out;
+      }
+
+      .message-ai .file-badge {
+        background: #4a5568;
+        box-shadow: 0 2px 8px rgba(74, 85, 104, 0.4);
+      }
+
+      .file-badge .file-icon {
+        color: white;
+        stroke-width: 2.5;
+      }
+
+      @keyframes badgePulse {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
 
       .message-text {
