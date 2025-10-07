@@ -1,13 +1,10 @@
 <!-- TODOS
-- Enviar notificaciones push con Pushcut
-- Registrar memorias de cosas random y añadirlas como tools
 - Registrar lista de la compra y añadirlas como tools
 - Registrar cosas a hacer y añadirlas como tools
 - Registrar normas establecidas por el usuario y añadirlas como tools
 - Eventos del calendario
 - Gestión de los menús en casa
 - Reservar en restaurantes
-- Integrarlo con voz con Shortcuts
 -->
 
 <!DOCTYPE html>
@@ -316,6 +313,16 @@
         mounted() {
           this.checkUser();
           this.configureMarked();
+
+          document.addEventListener("visibilitychange", async () => {
+            if (document.visibilityState === "visible") {
+              await this.syncMessages();
+              this.$nextTick(() => {
+                this.scrollToBottom();
+                this.focusInput();
+              });
+            }
+          });
         },
         activated() {
           // Para PWAs - se ejecuta cuando la app se activa
@@ -359,7 +366,7 @@
               // Scroll al final después de cargar los mensajes
               this.$nextTick(() => {
                 setTimeout(() => {
-                  this.scrollToBottom();
+                  this.scrollToBottom(false);
                   this.focusInput();
                 }, 100);
               });
@@ -396,7 +403,7 @@
               // Focus al input y scroll al final después de crear usuario
               this.$nextTick(() => {
                 this.focusInput();
-                this.scrollToBottom();
+                this.scrollToBottom(false);
               });
             }
           },
@@ -543,14 +550,14 @@
             }
             return text;
           },
-          scrollToBottom() {
+          scrollToBottom(smooth = true) {
             this.$nextTick(() => {
               const container = document.querySelector(".messages-container");
               if (container) {
                 // Scroll suave al final
                 container.scrollTo({
                   top: container.scrollHeight,
-                  behavior: "smooth",
+                  behavior: smooth ? "smooth" : "auto",
                 });
               }
             });
