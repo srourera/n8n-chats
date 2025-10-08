@@ -247,7 +247,7 @@
             />
             <textarea
               v-model="newMessage"
-              @keydown.enter.prevent="sendMessage"
+              @keydown="handleKeydown"
               placeholder="Escribe tu mensaje aquí..."
               rows="1"
               ref="messageInput"
@@ -480,6 +480,11 @@
               const message = this.newMessage.trim();
               this.newMessage = "";
 
+              // Resetear altura del textarea
+              this.$nextTick(() => {
+                this.autoResizeTextarea();
+              });
+
               // Añadir mensaje del usuario a la conversación
               const userMessage = {
                 createdAt: new Date().toISOString(),
@@ -652,6 +657,27 @@
           clearFile() {
             this.selectedFile = null;
             this.$refs.fileInput.value = "";
+          },
+          handleKeydown(event) {
+            // Si se presiona Enter sin Shift, enviar mensaje
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              this.sendMessage();
+            }
+            // Si se presiona Enter con Shift, permitir salto de línea (comportamiento por defecto)
+
+            // Auto-ajustar altura del textarea
+            this.$nextTick(() => {
+              this.autoResizeTextarea();
+            });
+          },
+          autoResizeTextarea() {
+            const textarea = this.$refs.messageInput;
+            if (textarea) {
+              textarea.style.height = "auto";
+              textarea.style.height =
+                Math.min(textarea.scrollHeight, 120) + "px";
+            }
           },
           async syncMessages() {
             if (!this.user || !this.user.username) return;
@@ -1266,6 +1292,7 @@
         max-height: 120px;
         min-height: 24px;
         padding: 0.5rem 0;
+        overflow-y: auto;
       }
 
       .input-wrapper textarea::placeholder {
