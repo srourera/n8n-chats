@@ -248,9 +248,11 @@
             <textarea
               v-model="newMessage"
               @keydown="handleKeydown"
+              @input="handleInput"
               placeholder="Escribe tu mensaje aquí..."
               rows="1"
               ref="messageInput"
+              enterkeyhint="send"
             ></textarea>
             <button
               @click="sendMessage"
@@ -518,7 +520,7 @@
                 this.$refs.fileInput.value = "";
 
                 const response = await fetch(
-                  "https://n8n.ridaflows.com/webhook/personal-assistant",
+                  "https://n8n.ridaflows.com/webhook/personal-assistanta",
                   {
                     method: "POST",
                     headers: {
@@ -659,14 +661,25 @@
             this.$refs.fileInput.value = "";
           },
           handleKeydown(event) {
-            // Si se presiona Enter sin Shift, enviar mensaje
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              this.sendMessage();
+            // En móviles, solo enviar con Enter si no hay Shift
+            // En desktop, también verificar si es Enter sin Shift
+            if (event.key === "Enter") {
+              // Si es móvil o no hay Shift, enviar mensaje
+              if (!event.shiftKey) {
+                event.preventDefault();
+                this.sendMessage();
+                return;
+              }
+              // Si hay Shift, permitir salto de línea (comportamiento por defecto)
             }
-            // Si se presiona Enter con Shift, permitir salto de línea (comportamiento por defecto)
 
             // Auto-ajustar altura del textarea
+            this.$nextTick(() => {
+              this.autoResizeTextarea();
+            });
+          },
+          handleInput() {
+            // Auto-ajustar altura cuando cambia el contenido (mejor para iOS)
             this.$nextTick(() => {
               this.autoResizeTextarea();
             });
@@ -674,9 +687,17 @@
           autoResizeTextarea() {
             const textarea = this.$refs.messageInput;
             if (textarea) {
+              // Resetear altura para calcular el contenido real
               textarea.style.height = "auto";
-              textarea.style.height =
-                Math.min(textarea.scrollHeight, 120) + "px";
+
+              // Calcular nueva altura basada en el contenido
+              const newHeight = Math.min(textarea.scrollHeight, 120);
+              textarea.style.height = newHeight + "px";
+
+              // En iOS, a veces necesitamos forzar el reflow
+              if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
+                textarea.offsetHeight; // Forzar reflow
+              }
             }
           },
           async syncMessages() {
