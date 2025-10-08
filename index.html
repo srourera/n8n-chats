@@ -249,7 +249,7 @@
               v-model="newMessage"
               @keydown="handleKeydown"
               @input="handleInput"
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder="Escribe tu mensaje aquí... (Enter para nueva línea, botón Enviar para mandar)"
               rows="1"
               ref="messageInput"
               enterkeyhint="send"
@@ -661,16 +661,25 @@
             this.$refs.fileInput.value = "";
           },
           handleKeydown(event) {
-            // En móviles, solo enviar con Enter si no hay Shift
-            // En desktop, también verificar si es Enter sin Shift
+            // Detectar si es móvil
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(
+              navigator.userAgent
+            );
+
             if (event.key === "Enter") {
-              // Si es móvil o no hay Shift, enviar mensaje
-              if (!event.shiftKey) {
-                event.preventDefault();
-                this.sendMessage();
-                return;
+              if (isMobile) {
+                // En móviles, permitir salto de línea por defecto
+                // El usuario puede usar el botón "Enviar" del teclado para enviar
+                // No prevenir el comportamiento por defecto
+              } else {
+                // En desktop, enviar con Enter sin Shift
+                if (!event.shiftKey) {
+                  event.preventDefault();
+                  this.sendMessage();
+                  return;
+                }
+                // Si hay Shift, permitir salto de línea (comportamiento por defecto)
               }
-              // Si hay Shift, permitir salto de línea (comportamiento por defecto)
             }
 
             // Auto-ajustar altura del textarea
