@@ -1,4 +1,4 @@
-# Arens - Personal Assistant Web Application
+# Arens
 
 ![Arens Logo](https://res.cloudinary.com/srourera/image/upload/t_100x100/v1759595913/ChatGPT_Image_4_oct_2025_18_38_15_gyw5ul.png)
 
