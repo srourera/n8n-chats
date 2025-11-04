@@ -254,8 +254,9 @@
               ref="messageInput"
             ></textarea>
             <button
+              v-if="!isRecording && (newMessage.trim() || selectedFile)"
               @click="sendMessage"
-              :disabled="(!newMessage.trim() && !selectedFile) || isLoading"
+              :disabled="isLoading"
               class="send-button"
             >
               <svg
@@ -268,6 +269,42 @@
               >
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+              </svg>
+            </button>
+            <button
+              v-else-if="!isRecording && !newMessage.trim() && !selectedFile"
+              @click="startRecording"
+              :disabled="isLoading"
+              class="send-button microphone-button"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+                ></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+            <button
+              v-else
+              @click="stopRecording"
+              class="send-button stop-button"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
               </svg>
             </button>
           </div>
@@ -360,6 +397,10 @@
               username: "",
             },
             conversationEvents: [],
+            isRecording: false,
+            mediaRecorder: null,
+            audioChunks: [],
+            selectedAudio: null,
           };
         },
         mounted() {
@@ -477,7 +518,11 @@
             this.conversationEvents = [];
           },
           async sendMessage() {
-            if (this.newMessage.trim() || this.selectedFile) {
+            if (
+              this.newMessage.trim() ||
+              this.selectedFile ||
+              this.selectedAudio
+            ) {
               const message = this.newMessage.trim();
               this.newMessage = "";
 
@@ -492,7 +537,10 @@
                 username: this.user.username,
                 role: "Human",
                 message:
-                  message || (this.selectedFile ? "[Archivo enviado]" : ""),
+                  message ||
+                  (this.selectedFile || this.selectedAudio
+                    ? "[Archivo enviado]"
+                    : ""),
                 withFile: !!this.selectedFile,
               };
 
@@ -506,7 +554,7 @@
               try {
                 console.log("Enviando mensaje:", message);
 
-                // Preparar FormData para enviar archivo
+                // Preparar FormData
                 const formData = new FormData();
                 formData.append("message", message || "");
                 formData.append("username", this.user.username);
@@ -514,8 +562,12 @@
                 if (this.selectedFile) {
                   formData.append("file", this.selectedFile);
                 }
+                if (this.selectedAudio) {
+                  formData.append("audio", this.selectedAudio);
+                }
 
                 this.selectedFile = null;
+                this.selectedAudio = null;
                 this.$refs.fileInput.value = "";
 
                 const response = await fetch(
@@ -750,6 +802,102 @@
                 "Error de conexión al sincronizar mensajes:",
                 error
               );
+            }
+          },
+          async startRecording() {
+            try {
+              // Solicitar acceso al micrófono
+              const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+              });
+
+              // Detectar el mejor formato de audio soportado
+              let mimeType = "audio/webm;codecs=opus";
+              const types = [
+                "audio/webm;codecs=opus",
+                "audio/webm",
+                "audio/ogg;codecs=opus",
+                "audio/mp4",
+                "audio/wav",
+              ];
+
+              for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                  mimeType = type;
+                  break;
+                }
+              }
+
+              // Crear MediaRecorder
+              this.mediaRecorder = new MediaRecorder(stream, {
+                mimeType: mimeType,
+              });
+
+              this.audioChunks = [];
+
+              // Capturar datos cuando estén disponibles
+              this.mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                  this.audioChunks.push(event.data);
+                }
+              };
+
+              // Cuando termine la grabación
+              this.mediaRecorder.onstop = async () => {
+                // Detener todas las pistas del stream
+                stream.getTracks().forEach((track) => track.stop());
+
+                // Crear Blob del audio
+                const audioBlob = new Blob(this.audioChunks, {
+                  type: mimeType,
+                });
+
+                // Determinar extensión según el tipo MIME
+                let extension = "webm";
+                if (mimeType.includes("webm")) extension = "webm";
+                else if (mimeType.includes("ogg")) extension = "ogg";
+                else if (mimeType.includes("mp4")) extension = "m4a";
+                else if (mimeType.includes("wav")) extension = "wav";
+
+                // Crear File del audio
+                this.selectedAudio = new File(
+                  [audioBlob],
+                  `audio-${Date.now()}.${extension}`,
+                  { type: mimeType }
+                );
+
+                // Enviar el mensaje (que ahora manejará el audio)
+                await this.sendMessage();
+              };
+
+              // Manejar errores
+              this.mediaRecorder.onerror = (event) => {
+                console.error("Error en la grabación:", event);
+                alert("Error al grabar audio. Inténtalo de nuevo.");
+                this.isRecording = false;
+                stream.getTracks().forEach((track) => track.stop());
+              };
+
+              // Iniciar grabación
+              this.mediaRecorder.start();
+              this.isRecording = true;
+            } catch (error) {
+              console.error("Error al acceder al micrófono:", error);
+              if (error.name === "NotAllowedError") {
+                alert(
+                  "Se necesita permiso para acceder al micrófono. Por favor, permite el acceso en la configuración del navegador."
+                );
+              } else if (error.name === "NotFoundError") {
+                alert("No se encontró ningún micrófono.");
+              } else {
+                alert("Error al iniciar la grabación. Inténtalo de nuevo.");
+              }
+            }
+          },
+          stopRecording() {
+            if (this.mediaRecorder && this.isRecording) {
+              this.mediaRecorder.stop();
+              this.isRecording = false;
             }
           },
         },
@@ -1381,6 +1529,46 @@
 
       .send-button:hover:not(:disabled) svg {
         transform: translateX(1px);
+      }
+
+      .microphone-button {
+        background: linear-gradient(
+          135deg,
+          #cd853f 0%,
+          #d2691e 50%,
+          #cd853f 100%
+        );
+        box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+      }
+
+      .microphone-button:hover:not(:disabled) {
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+      }
+
+      .stop-button {
+        background: linear-gradient(
+          135deg,
+          #d2691e 0%,
+          #cd853f 50%,
+          #d2691e 100%
+        );
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .stop-button:hover {
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
       }
 
       .file-button-container {
