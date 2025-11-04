@@ -1,20 +1,20 @@
 <!-- TODOS
-- Registrar lista de la compra y añadirlas como tools
-- Registrar cosas a hacer y añadirlas como tools
-- Registrar normas establecidas por el usuario y añadirlas como tools
-- Eventos del calendario
-- Gestión de los menús en casa
-- Reservar en restaurantes
+- Registrar llista de la compra i afegir-les com a tools
+- Registrar coses a fer i afegir-les com a tools
+- Registrar normes establertes per l'usuari i afegir-les com a tools
+- Esdeveniments del calendari
+- Gestió dels menús a casa
+- Reservar en restaurants
 -->
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="ca">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Arens</title>
 
-    <!-- PWA Meta Tags para iPhone -->
+    <!-- PWA Meta Tags per a iPhone -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
@@ -23,7 +23,7 @@
     <meta name="apple-mobile-web-app-title" content="Arens" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- Iconos para iPhone -->
+    <!-- Icones per a iPhone -->
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -42,14 +42,14 @@
       href="https://res.cloudinary.com/srourera/image/upload/t_16x16/v1759595913/ChatGPT_Image_4_oct_2025_18_38_15_gyw5ul.png"
     />
 
-    <!-- Vue.js desde CDN -->
+    <!-- Vue.js des de CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Marked.js para parsear Markdown -->
+    <!-- Marked.js per analitzar Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
   </head>
   <body>
     <div id="app">
-      <!-- Pantalla de autenticación con token -->
+      <!-- Pantalla d'autenticació amb token -->
       <div v-if="!token" class="auth-screen">
         <div class="auth-content">
           <img
@@ -57,24 +57,25 @@
             alt="Arens"
             style="margin-bottom: 20px; border-radius: 100%"
           />
-          <h1>🔐 Aplicación Privada</h1>
+          <h1>🔐 Aplicació Privada</h1>
           <p>
-            Esta aplicación es privada. Introduce la contraseña para continuar.
+            Aquesta aplicació és privada. Introdueix la contrasenya per
+            continuar.
           </p>
           <div class="password-form">
             <input
               v-model="password"
               type="password"
-              placeholder="Contraseña"
+              placeholder="Contrasenya"
               @keydown.enter.prevent="authenticate"
               class="password-input"
             />
-            <button @click="authenticate" class="auth-button">Acceder</button>
+            <button @click="authenticate" class="auth-button">Accedir</button>
           </div>
         </div>
       </div>
 
-      <!-- Pantalla de bienvenida si no hay usuario -->
+      <!-- Pantalla de benvinguda si no hi ha usuari -->
       <div v-else-if="!user" class="welcome-screen">
         <div class="welcome-content">
           <img
@@ -83,16 +84,16 @@
             style="margin-bottom: 10px; border-radius: 100%"
           />
           <h1>Arens</h1>
-          <p>Crea un usuario o inicia sesión</p>
+          <p>Crea un usuari o inicia sessió</p>
           <button @click="showAuthModal = true" class="start-button">
-            Empezemos
+            Comencem
           </button>
         </div>
       </div>
 
-      <!-- Interfaz principal del chat -->
+      <!-- Interfície principal del xat -->
       <div v-else class="chat-container">
-        <!-- Header con botón de logout -->
+        <!-- Capçalera amb botó de tancar sessió -->
         <div class="chat-header">
           <h2 style="display: flex; align-items: center; gap: 10px">
             <img
@@ -110,7 +111,7 @@
             <button
               @click="showUserInfo"
               class="user-info-button"
-              title="Información del usuario"
+              title="Informació de l'usuari"
             >
               <svg
                 width="20"
@@ -124,7 +125,7 @@
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </button>
-            <button @click="logout" class="logout-button" title="Cerrar sesión">
+            <button @click="logout" class="logout-button" title="Tancar sessió">
               <svg
                 width="20"
                 height="20"
@@ -141,20 +142,20 @@
           </div>
         </div>
 
-        <!-- Área de mensajes -->
+        <!-- Àrea de missatges -->
         <div class="messages-container">
-          <!-- Mensaje de bienvenida solo si no hay conversación -->
+          <!-- Missatge de benvinguda només si no hi ha conversa -->
           <div
             v-if="conversationEvents.length === 0"
             class="message welcome-message"
           >
             <div class="message-content">
-              <h3>¡Hola {{ user.name }}! 👋</h3>
-              <p>Bienvenido a Arens. ¿En qué puedo ayudarte hoy?</p>
+              <h3>Hola {{ user.name }}! 👋</h3>
+              <p>Benvingut a Arens. En què puc ajudar-te avui?</p>
             </div>
           </div>
 
-          <!-- Lista de mensajes de la conversación -->
+          <!-- Llista de missatges de la conversa -->
           <div
             v-for="(event, index) in conversationEvents"
             :key="index"
@@ -184,7 +185,7 @@
             </div>
           </div>
 
-          <!-- Indicador de carga -->
+          <!-- Indicador de càrrega -->
           <div v-if="isLoading" class="loading-message">
             <div class="loading-content">
               <div class="loading-dots">
@@ -192,19 +193,19 @@
                 <span></span>
                 <span></span>
               </div>
-              <span class="loading-text">Arens está pensando...</span>
+              <span class="loading-text">Arens està pensant...</span>
             </div>
           </div>
         </div>
 
-        <!-- Input de mensaje -->
+        <!-- Entrada de missatge -->
         <div class="input-container">
           <div class="input-wrapper">
             <div class="file-button-container">
               <button
                 @click="triggerFileInput"
                 :class="['image-button', { 'has-file': selectedFile }]"
-                :title="selectedFile ? 'Cambiar archivo' : 'Subir imagen'"
+                :title="selectedFile ? 'Canviar arxiu' : 'Pujar imatge'"
               >
                 <svg
                   width="20"
@@ -219,7 +220,7 @@
                   <polyline points="21,15 16,10 5,21"></polyline>
                 </svg>
               </button>
-              <!-- X para deseleccionar archivo -->
+              <!-- X per deseleccionar arxiu -->
               <button
                 v-if="selectedFile"
                 @click.stop="clearFile"
@@ -249,7 +250,7 @@
               v-model="newMessage"
               @keydown="handleKeydown"
               @input="handleInput"
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder="Pregunta el que vulguis..."
               rows="1"
               ref="messageInput"
             ></textarea>
@@ -311,19 +312,19 @@
         </div>
       </div>
 
-      <!-- Modal de autenticación -->
+      <!-- Modal d'autenticació -->
       <div v-if="showAuthModal" class="modal-overlay" @click="closeModal">
         <div class="modal-content" @click.stop>
-          <h3>Crear Usuario</h3>
+          <h3>Crear Usuari</h3>
           <form @submit.prevent="createUser">
             <div class="form-group">
-              <label for="name">Nombre:</label>
+              <label for="name">Nom:</label>
               <input
                 v-model="formData.name"
                 type="text"
                 id="name"
                 required
-                placeholder="Tu nombre completo"
+                placeholder="El teu nom complet"
               />
             </div>
             <div class="form-group">
@@ -333,12 +334,12 @@
                 type="text"
                 id="username"
                 required
-                placeholder="Tu nombre de usuario"
+                placeholder="El teu nom d'usuari"
               />
             </div>
             <div class="form-actions">
               <button type="button" @click="closeModal" class="cancel-button">
-                Cancelar
+                Cancel·lar
               </button>
               <button type="submit" class="confirm-button">Confirmar</button>
             </div>
@@ -346,7 +347,7 @@
         </div>
       </div>
 
-      <!-- Modal de información del usuario -->
+      <!-- Modal d'informació de l'usuari -->
       <div
         v-if="showUserInfoModal"
         class="modal-overlay"
@@ -354,7 +355,7 @@
       >
         <div class="user-info-modal-content" @click.stop>
           <div class="user-info-modal-header">
-            <h3>Información del Usuario</h3>
+            <h3>Informació de l'Usuari</h3>
             <button @click="closeUserInfoModal" class="close-button">
               <svg
                 width="20"
@@ -418,7 +419,7 @@
           });
         },
         activated() {
-          // Para PWAs - se ejecuta cuando la app se activa
+          // Per a PWAs - s'executa quan l'app s'activa
           this.checkUser();
         },
         watch: {
@@ -432,7 +433,7 @@
         },
         methods: {
           async checkUser() {
-            // Primero verificar si hay token
+            // Primer verificar si hi ha token
             const arensHeaderToken = localStorage.getItem("arensHeaderToken");
             if (!arensHeaderToken) {
               this.token = null;
@@ -441,7 +442,7 @@
 
             this.token = arensHeaderToken;
 
-            // Si hay token, verificar usuario
+            // Si hi ha token, verificar usuari
             const userName = localStorage.getItem("userName");
             if (userName) {
               this.user = {
@@ -453,10 +454,10 @@
               };
               this.conversationEvents = this.user.conversationEvents;
 
-              // Sincronizar mensajes con el servidor
+              // Sincronitzar missatges amb el servidor
               await this.syncMessages();
 
-              // Scroll al final después de cargar los mensajes
+              // Desplaçar al final després de carregar els missatges
               this.$nextTick(() => {
                 setTimeout(() => {
                   this.scrollToBottom(false);
@@ -467,10 +468,10 @@
           },
           authenticate() {
             if (this.password.trim()) {
-              // Guardar el token en localStorage
+              // Guardar el token a localStorage
               localStorage.setItem("arensHeaderToken", this.password.trim());
               this.password = "";
-              // Volver a llamar a checkUser para avanzar
+              // Tornar a cridar checkUser per avançar
               this.checkUser();
             }
           },
@@ -490,10 +491,10 @@
               this.showAuthModal = false;
               this.formData = { name: "", username: "" };
 
-              // Sincronizar mensajes con el servidor después del login
+              // Sincronitzar missatges amb el servidor després del login
               await this.syncMessages();
 
-              // Focus al input y scroll al final después de crear usuario
+              // Focus a l'entrada i desplaçar al final després de crear usuari
               this.$nextTick(() => {
                 this.focusInput();
                 this.scrollToBottom(false);
@@ -526,20 +527,22 @@
               const message = this.newMessage.trim();
               this.newMessage = "";
 
-              // Resetear altura del textarea
+              // Restablir altura del textarea
               this.$nextTick(() => {
                 this.autoResizeTextarea();
               });
 
-              // Añadir mensaje del usuario a la conversación
+              // Afegir missatge de l'usuari a la conversa
               const userMessage = {
                 createdAt: new Date().toISOString(),
                 username: this.user.username,
                 role: "Human",
                 message:
                   message ||
-                  (this.selectedFile || this.selectedAudio
-                    ? "[Archivo enviado]"
+                  (this.selectedFile
+                    ? "[Arxiu enviat]"
+                    : this.selectedAudio
+                    ? "Escoltant àudio..."
                     : ""),
                 withFile: !!this.selectedFile,
               };
@@ -548,11 +551,11 @@
               this.scrollToBottom();
               this.saveConversation();
 
-              // Activar loading
+              // Activar càrrega
               this.isLoading = true;
 
               try {
-                console.log("Enviando mensaje:", message);
+                console.log("Enviant missatge:", message);
 
                 // Preparar FormData
                 const formData = new FormData();
@@ -562,7 +565,8 @@
                 if (this.selectedFile) {
                   formData.append("file", this.selectedFile);
                 }
-                if (this.selectedAudio) {
+                const hasAudio = !!this.selectedAudio;
+                if (hasAudio) {
                   formData.append("audio", this.selectedAudio);
                 }
 
@@ -583,54 +587,55 @@
 
                 if (response.ok) {
                   const data = await response.json();
-                  console.log("Respuesta del webhook:", data);
+                  console.log("Resposta del webhook:", data);
 
-                  // Añadir respuesta de la IA a la conversación
+                  // Afegir resposta de la IA a la conversa
                   const aiMessage = {
                     createdAt: new Date().toISOString(),
                     username: this.user.username,
                     role: "IA",
-                    message:
-                      data.message || data.response || "Respuesta recibida",
+                    message: data.message || data.response || "Resposta rebuda",
                     withFile: false,
                   };
 
                   this.conversationEvents.push(aiMessage);
                   this.scrollToBottom();
                   this.saveConversation();
+                  this.syncMessages();
                 } else {
-                  console.error("Error en la respuesta:", response.status);
+                  console.error("Error en la resposta:", response.status);
 
-                  // Añadir mensaje de error
+                  // Afegir missatge d'error
                   const errorMessage = {
                     createdAt: new Date().toISOString(),
                     username: this.user.username,
                     role: "IA",
                     message:
-                      "Error al procesar la solicitud. Inténtalo de nuevo.",
+                      "Error en processar la sol·licitud. Torna-ho a intentar.",
                     withFile: false,
                   };
 
                   this.conversationEvents.push(errorMessage);
                   this.scrollToBottom();
                   this.saveConversation();
+                  this.syncMessages();
                 }
               } catch (error) {
-                console.error("Error al enviar mensaje:", error);
+                console.error("Error en enviar missatge:", error);
 
-                // Añadir mensaje de error
+                // Afegir missatge d'error
                 const errorMessage = {
                   createdAt: new Date().toISOString(),
                   username: this.user.username,
                   role: "IA",
-                  message: "Error de conexión. Inténtalo de nuevo.",
+                  message: "Error de connexió. Torna-ho a intentar.",
                   withFile: false,
                 };
 
                 this.conversationEvents.push(errorMessage);
                 this.saveConversation();
               } finally {
-                // Desactivar loading
+                // Desactivar càrrega
                 this.isLoading = false;
               }
             }
@@ -644,7 +649,7 @@
           },
           formatTime(isoString) {
             const date = new Date(isoString);
-            return date.toLocaleTimeString("es-ES", {
+            return date.toLocaleTimeString("ca-ES", {
               hour: "2-digit",
               minute: "2-digit",
             });
@@ -669,7 +674,7 @@
             this.$nextTick(() => {
               const container = document.querySelector(".messages-container");
               if (container) {
-                // Scroll suave al final
+                // Desplaçament suau al final
                 container.scrollTo({
                   top: container.scrollHeight,
                   behavior: smooth ? "smooth" : "auto",
@@ -691,15 +696,15 @@
           handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
-              // Validar tipo de archivo
+              // Validar tipus d'arxiu
               if (!file.type.startsWith("image/")) {
-                alert("Por favor selecciona un archivo de imagen válido");
+                alert("Si us plau, selecciona un arxiu d'imatge vàlid");
                 return;
               }
 
-              // Validar tamaño (máximo 10MB)
+              // Validar mida (màxim 10MB)
               if (file.size > 10 * 1024 * 1024) {
-                alert("La imagen es demasiado grande. Máximo 10MB");
+                alert("La imatge és massa gran. Màxim 10MB");
                 return;
               }
 
@@ -712,8 +717,8 @@
             this.$refs.fileInput.value = "";
           },
           handleKeydown(event) {
-            // Enter siempre hace salto de línea (comportamiento por defecto)
-            // Solo se envía con el botón de enviar
+            // Enter sempre fa salt de línia (comportament per defecte)
+            // Només s'envia amb el botó d'enviar
 
             // Auto-ajustar altura del textarea
             this.$nextTick(() => {
@@ -721,7 +726,7 @@
             });
           },
           handleInput() {
-            // Auto-ajustar altura cuando cambia el contenido (mejor para iOS)
+            // Auto-ajustar altura quan canvia el contingut (millor per a iOS)
             this.$nextTick(() => {
               this.autoResizeTextarea();
             });
@@ -729,16 +734,16 @@
           autoResizeTextarea() {
             const textarea = this.$refs.messageInput;
             if (textarea) {
-              // Resetear altura para calcular el contenido real
+              // Restablir altura per calcular el contingut real
               textarea.style.height = "auto";
 
-              // Calcular nueva altura basada en el contenido
+              // Calcular nova altura basada en el contingut
               const newHeight = Math.min(textarea.scrollHeight, 120);
               textarea.style.height = newHeight + "px";
 
-              // En iOS, a veces necesitamos forzar el reflow
+              // En iOS, a vegades necessitem forçar el reflow
               if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
-                textarea.offsetHeight; // Forzar reflow
+                textarea.offsetHeight; // Forçar reflow
               }
             }
           },
@@ -746,7 +751,7 @@
             if (!this.user || !this.user.username) return;
 
             try {
-              console.log("Sincronizando mensajes para:", this.user.username);
+              console.log("Sincronitzant missatges per a:", this.user.username);
 
               const response = await fetch(
                 `https://n8n.ridaflows.com/webhook/personal-assistant-messages?username=${this.user.username}`,
@@ -761,11 +766,11 @@
 
               if (response.ok) {
                 const serverMessages = await response.json();
-                console.log("Mensajes del servidor:", serverMessages);
+                console.log("Missatges del servidor:", serverMessages);
 
-                // Verificar si la respuesta es un array válido
+                // Verificar si la resposta és un array vàlid
                 if (Array.isArray(serverMessages)) {
-                  // Filtrar mensajes que tengan username
+                  // Filtrar missatges que tinguin username
                   const filteredMessages = serverMessages.filter(
                     (i) => !!i.username
                   );
@@ -773,23 +778,23 @@
                   this.conversationEvents = filteredMessages;
                   this.user.conversationEvents = filteredMessages;
 
-                  // Actualizar localStorage
+                  // Actualitzar localStorage
                   localStorage.setItem(
                     "conversationevents",
                     JSON.stringify(filteredMessages)
                   );
 
-                  console.log("Mensajes sincronizados correctamente");
+                  console.log("Missatges sincronitzats correctament");
                 } else {
-                  console.log("Respuesta del servidor no es un array válido");
+                  console.log("Resposta del servidor no és un array vàlid");
                 }
               } else {
                 console.error(
-                  "Error al sincronizar mensajes:",
+                  "Error en sincronitzar missatges:",
                   response.status
                 );
 
-                // Si es error 403, borrar token y volver a pantalla inicial
+                // Si és error 403, esborrar token i tornar a pantalla inicial
                 if (response.status === 403) {
                   localStorage.removeItem("arensHeaderToken");
                   this.token = null;
@@ -799,19 +804,19 @@
               }
             } catch (error) {
               console.error(
-                "Error de conexión al sincronizar mensajes:",
+                "Error de connexió en sincronitzar missatges:",
                 error
               );
             }
           },
           async startRecording() {
             try {
-              // Solicitar acceso al micrófono
+              // Sol·licitar accés al micròfon
               const stream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
               });
 
-              // Detectar el mejor formato de audio soportado
+              // Detectar el millor format d'àudio suportat
               let mimeType = "audio/webm;codecs=opus";
               const types = [
                 "audio/webm;codecs=opus",
@@ -835,62 +840,62 @@
 
               this.audioChunks = [];
 
-              // Capturar datos cuando estén disponibles
+              // Capturar dades quan estiguin disponibles
               this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                   this.audioChunks.push(event.data);
                 }
               };
 
-              // Cuando termine la grabación
+              // Quan acabi la gravació
               this.mediaRecorder.onstop = async () => {
-                // Detener todas las pistas del stream
+                // Aturar totes les pistes del stream
                 stream.getTracks().forEach((track) => track.stop());
 
-                // Crear Blob del audio
+                // Crear Blob de l'àudio
                 const audioBlob = new Blob(this.audioChunks, {
                   type: mimeType,
                 });
 
-                // Determinar extensión según el tipo MIME
+                // Determinar extensió segons el tipus MIME
                 let extension = "webm";
                 if (mimeType.includes("webm")) extension = "webm";
                 else if (mimeType.includes("ogg")) extension = "ogg";
                 else if (mimeType.includes("mp4")) extension = "m4a";
                 else if (mimeType.includes("wav")) extension = "wav";
 
-                // Crear File del audio
+                // Crear File de l'àudio
                 this.selectedAudio = new File(
                   [audioBlob],
                   `audio-${Date.now()}.${extension}`,
                   { type: mimeType }
                 );
 
-                // Enviar el mensaje (que ahora manejará el audio)
+                // Enviar el missatge (que ara gestionarà l'àudio)
                 await this.sendMessage();
               };
 
-              // Manejar errores
+              // Gestionar errors
               this.mediaRecorder.onerror = (event) => {
-                console.error("Error en la grabación:", event);
-                alert("Error al grabar audio. Inténtalo de nuevo.");
+                console.error("Error en la gravació:", event);
+                alert("Error en gravar àudio. Torna-ho a intentar.");
                 this.isRecording = false;
                 stream.getTracks().forEach((track) => track.stop());
               };
 
-              // Iniciar grabación
+              // Iniciar gravació
               this.mediaRecorder.start();
               this.isRecording = true;
             } catch (error) {
-              console.error("Error al acceder al micrófono:", error);
+              console.error("Error en accedir al micròfon:", error);
               if (error.name === "NotAllowedError") {
                 alert(
-                  "Se necesita permiso para acceder al micrófono. Por favor, permite el acceso en la configuración del navegador."
+                  "Es necessita permís per accedir al micròfon. Si us plau, permet l'accés a la configuració del navegador."
                 );
               } else if (error.name === "NotFoundError") {
-                alert("No se encontró ningún micrófono.");
+                alert("No s'ha trobat cap micròfon.");
               } else {
-                alert("Error al iniciar la grabación. Inténtalo de nuevo.");
+                alert("Error en iniciar la gravació. Torna-ho a intentar.");
               }
             }
           },
@@ -1280,7 +1285,7 @@
         margin-bottom: 0.25rem;
       }
 
-      /* Estilos para elementos Markdown en mensajes de IA */
+      /* Estils per a elements Markdown en missatges de IA */
       .message-ai .message-text h1,
       .message-ai .message-text h2,
       .message-ai .message-text h3,
